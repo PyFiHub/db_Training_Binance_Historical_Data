@@ -147,9 +147,13 @@ CASE: This statement allows you to perform conditional logic in SQL queries. It 
 Example: Categorize the days based on the closing price
 
 ```sql
-SELECT A.open_time, A.close AS BTC_close, B.close AS ETH_close
-FROM pair_BTCUSDT AS A
-INNER JOIN pair_ETHUSDT AS B ON A.open_time = B.open_time;
+SELECT open_time, close,
+       CASE
+           WHEN close < 30000 THEN 'Low'
+           WHEN close >= 30000 AND close < 60000 THEN 'Medium'
+           ELSE 'High'
+       END AS price_category
+FROM pair_BTCUSDT;
 ```
 
 <br />
