@@ -18,7 +18,7 @@ This script [main.py](https://github.com/PyFiHub/db_Training_Binance_Historical_
 
 - **Libraries**: Import necessary libraries for the script, including requests for HTTP requests, pandas for data manipulation, logging for logging messages, Binance client for interacting with Binance API, and sqlite3 for working with SQLite databases.
 
-- **Binance Client**: Initialize the Binance client with API key and secret from the api_keys module.
+- **Binance Client**: Initialize the Binance client with API key and secret from the api_keys module. (they are not mandatory for this use case)
 
 - **Logger**: Set up the logger to handle logging messages with the specified format.
 

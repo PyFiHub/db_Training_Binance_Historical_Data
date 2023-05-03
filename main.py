@@ -8,8 +8,9 @@ from binance.client import Client
 import sqlite3
 #from api_keys import api_key, api_secret
 
-api_key = ""
-api_secret = ""
+api_key = "" #not required
+api_secret = "" #not required
+
 # Binance Client
 client = Client(api_key, api_secret)
 
