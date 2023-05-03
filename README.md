@@ -1,9 +1,18 @@
 # db_Training_Binance_Historical_Data
  SQL and Python Practice - Coin/Token Binance
 
+## Summary
+
+- [Binance Historical Data](#binance-historical-data)
+- [Useful SQL Commands for Data Analysis](#useful-sql-commands-for-data-analysis)
+- [Useful SQL Commands for Technical Analysis](#useful-sql-commands-for-technical-analysis)
+- [Python Samples - How to implement SQL in Python](#python-samples---how-to-implement-sql-in-python)
+
+
+<br />
 <br />
 
-### Binance Historical Data
+### <a id="binance-historical-data"></a>Binance Historical Data
 
 This script imports historical trading data for multiple cryptocurrency pairs from the Binance API, processes the data, and stores it in an SQLite database. Let's break down the different parts of the code:
 
@@ -32,7 +41,7 @@ This script ensures that only new historical trading data is added to the databa
 <br />
 <br />
 
-### Useful SQL Commands for Data Analysts
+### <a id="useful-sql-commands-for-data-analysis"></a>Useful SQL Commands for Data Analysis
 
 **SELECT**:
 
@@ -228,7 +237,7 @@ FROM pair_BTCUSDT;
 <br />
 <br />
 
-### Useful SQL Commands for Technical Analysts
+### <a id="useful-sql-commands-for-technical-analysis"></a>Useful SQL Commands for Technical Analysis
 
 <br />
 
@@ -284,3 +293,58 @@ FROM gain_loss_sums;
 ```
 
 <br />
+<br />
+
+### <a id="python-samples---how-to-implement-sql-in-python"></a>Python Samples - How to implement SQL in Python
+
+<br />
+
+```python
+import sqlite3
+import pandas as pd
+
+## Open database to get list of trading pairs available.
+def fetch_pairs_db():
+    conn = sqlite3.connect('trading_data.db')
+    c = conn.cursor()
+    c.execute("SELECT name FROM sqlite_master WHERE type='table'")
+    tables = c.fetchall()
+    conn.close()
+    
+    return tables
+
+## Connect to table to get data for pair selected.
+def fetch_data_db(symbol):
+    conn = sqlite3.connect('trading_data.db')
+    pair = "pair_" + symbol
+    df = pd.read_sql_query(f"SELECT * FROM {pair}", conn)
+    conn.close()
+    
+    return df
+
+## SMA Query Test   
+def submit_query(symbol):
+    conn = sqlite3.connect('trading_data.db')
+    pair = "pair_" + symbol
+    query = f"""
+    SELECT open_time, close,
+           AVG(close) OVER (ORDER BY open_time ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS sma_20
+    FROM {pair};
+    """
+    df = pd.read_sql_query(query, conn)
+    conn.close()
+    return df
+
+
+## Samples
+
+# Print Pairs Tables
+for item in fetch_pairs_db()[:5]:
+    print(item[0])
+
+# Print Data Sample with BTCUSDT
+print(fetch_data_db("BTCUSDT").head())
+
+# Print Query Results (SMA 20 Example)
+print(submit_query("BTCUSDT").head())
+```
