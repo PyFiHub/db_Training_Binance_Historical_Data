@@ -14,7 +14,7 @@
 
 ### <a id="binance-historical-data"></a>Binance Historical Data
 
-This script imports historical trading data for multiple cryptocurrency pairs from the Binance API, processes the data, and stores it in an SQLite database. Let's break down the different parts of the code:
+This script [main.py](https://github.com/PyFiHub/db_Training_Binance_Historical_Data/blob/main/main.py) imports historical trading data for multiple cryptocurrency pairs from the Binance API, processes the data, and stores it in an SQLite database. Let's break down the different parts of the code:
 
 - **Libraries**: Import necessary libraries for the script, including requests for HTTP requests, pandas for data manipulation, logging for logging messages, Binance client for interacting with Binance API, and sqlite3 for working with SQLite databases.
 
