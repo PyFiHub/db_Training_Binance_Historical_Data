@@ -35,7 +35,11 @@ def get_trading_pairs():
     # Screen available pairs - Using USDT pairs.
     try:
         info = client.get_exchange_info()
-        return [symbol["symbol"] for symbol in info["symbols"] if symbol["status"] == "TRADING" and "USDT" in symbol["symbol"]]
+        return [symbol["symbol"] for symbol in info["symbols"] 
+        if symbol["status"] == "TRADING" 
+        and "USDT" in symbol["symbol"] 
+        and "UPUSDT" not in symbol["symbol"] 
+        and "DOWNUSDT" not in symbol["symbol"]]
     except Exception as e:
         logger.error(f"Error retrieving trading pairs: {e}")
         return []
