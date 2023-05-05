@@ -1,5 +1,4 @@
 
 trading_data.db
-trading_data.db
-browse_db copy.py
-*.db
+browse_db_v2.py
+browse_db.py
