@@ -1,48 +1,18 @@
 # db_Training_Binance_Historical_Data
- SQL and Python Practice - Coin/Token Binance
- <br />
-
-### Demo: [PyFiHub](https://pyfihub.com/Binance_Historical_Data)
+SQL and Python Practice - Coin/Token Binance
+<br />
+<br />
 
 ## Summary
 
-- [Binance Historical Data](#binance-historical-data)
 - [Useful SQL Commands for Data Analysis](#useful-sql-commands-for-data-analysis)
 - [Useful SQL Commands for Technical Analysis](#useful-sql-commands-for-technical-analysis)
 - [Python Samples - How to implement SQL in Python](#python-samples---how-to-implement-sql-in-python)
 
+## SQL Playground: [Streamlit Cloud](https://pyfihub-streamlit-apps-streamlit-sql-db-uo2s89.streamlit.app)
 
 <br />
-<br />
 
-### <a id="binance-historical-data"></a>Binance Historical Data
-
-This script [main.py](https://github.com/PyFiHub/db_Training_Binance_Historical_Data/blob/main/main.py) imports historical trading data for multiple cryptocurrency pairs from the Binance API, processes the data, and stores it in an SQLite database. Let's break down the different parts of the code:
-
-- **Libraries**: Import necessary libraries for the script, including requests for HTTP requests, pandas for data manipulation, logging for logging messages, Binance client for interacting with Binance API, and sqlite3 for working with SQLite databases.
-
-- **Binance Client**: Initialize the Binance client with API key and secret from the api_keys module. (they are not mandatory for this use case)
-
-- **Logger**: Set up the logger to handle logging messages with the specified format.
-
-- **Functions**:
-    - `convert_to_float()`: Converts specific columns in the given DataFrame to float data type.
-    - `get_trading_pairs()`: Retrieves a list of trading pairs from the Binance API. It filters the list to include only pairs with a status of "TRADING" and having "USDT" in their symbol.
-    - `get_historical_data()`: Gets historical trading data for a specified trading pair, given the latest timestamp recorded in the database, the interval for the data, and the number of data points to retrieve. It drops unnecessary columns, converts specific columns to float data type, and converts the "open_time" and "close_time" columns to datetime objects. It then filters the data based on the latest timestamp, if provided.
-    - `create_table()`: Creates a table in the SQLite database for each trading pair, with a specified structure for storing historical trading data.
-
-- **Main script**:
-    - Get the list of trading pairs by calling `get_trading_pairs()`.
-    - If there are trading pairs, connect to the SQLite database, trading_data.db.
-    - For each trading pair, create a table in the database, log the trading pair being added, and retrieve the latest timestamp recorded in the table.
-    - Get the historical data for the trading pair with the latest timestamp, if it exists.
-    - If the retrieved data is not empty, append the new data to the corresponding table in the database.
-    - If an error occurs while retrieving data for a trading pair, log the error message.
-
-This script ensures that only new historical trading data is added to the database each time it is run, avoiding duplication of data.
-
-<br />
-<br />
 
 ### <a id="useful-sql-commands-for-data-analysis"></a>Useful SQL Commands for Data Analysis
 
@@ -183,17 +153,6 @@ FROM pair_BTCUSDT;
 
 <br />
 
-**COALESCE**:
-
-COALESCE: The COALESCE() function returns the first non-null value in a list of expressions. It is often used to replace null values with a default value or another column's value.
-
-```sql
-SELECT open_time, COALESCE(volume, 0) AS volume
-FROM pair_BTCUSDT;
-```
-
-<br />
-
 **LAG**:
 
 LAG: The LAG() function is a window function that returns the value of a given expression for the row that is N rows before the current row within the result set. If no such row exists or the value is NULL, it returns NULL.
@@ -216,17 +175,6 @@ FROM pair_BTCUSDT;
 
 <br />
 
-**STDDEV_POP**:
-
-STDDEV_POP: The STDDEV_POP() function is an aggregate function that returns the population standard deviation of a given expression. It calculates the square root of the variance, which is the average of the squared differences from the mean.
-
-```sql
-SELECT open_time, close,
-       STDDEV_POP(close) OVER (ORDER BY open_time ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS stddev_20
-FROM pair_BTCUSDT;
-```
-
-<br />
 
 **ROW_NUMBER**:
 
@@ -246,30 +194,14 @@ FROM pair_BTCUSDT;
 
 **Calculate Simple Moving Average (SMA)**:
 
-Calculate the 20-day simple moving average for a specific trading pair.
+Calculate the 200-day simple moving average for a specific trading pair.
 
 ```sql
-SELECT open_time, close,
-       AVG(close) OVER (ORDER BY open_time ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS sma_20
-FROM pair_BTCUSDT;
-```
-
-<br />
-
-**Calculate Bollinger Bands**:
-
-Calculate the 20-day Bollinger Bands, which include the upper and lower bands based on the simple moving average and standard deviation.
-
-```sql
-SELECT open_time, close, sma_20,
-       sma_20 + 2 * stddev_20 AS upper_band,
-       sma_20 - 2 * stddev_20 AS lower_band
-FROM (
-    SELECT open_time, close,
-           AVG(close) OVER (ORDER BY open_time ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS sma_20,
-           STDDEV_POP(close) OVER (ORDER BY open_time ROWS BETWEEN 19 PRECEDING AND CURRENT ROW) AS stddev_20
-    FROM pair_BTCUSDT
-) sub;
+SELECT close_time, close, volume, num_trades, 
+AVG(close) OVER (ORDER BY close_time ROWS BETWEEN 199 PRECEDING AND CURRENT ROW) AS SMA_200
+FROM pair_BTCUSDT
+ORDER BY close_time DESC
+LIMIT 200;
 ```
 
 <br />
@@ -279,20 +211,23 @@ FROM (
 Calculate the 14-day Relative Strength Index (RSI) for a specific trading pair.
 
 ```sql
-WITH gains_losses AS (
-    SELECT open_time, close,
-           COALESCE(close - LAG(close) OVER (ORDER BY open_time), 0) AS change
+WITH changes AS (
+    SELECT
+        close_time,
+        close,
+        close - LAG(close) OVER (ORDER BY close_time) AS price_change
     FROM pair_BTCUSDT
-),
-gain_loss_sums AS (
-    SELECT open_time, close,
-           SUM(CASE WHEN change >= 0 THEN change ELSE 0 END) OVER (ORDER BY open_time ROWS BETWEEN 13 PRECEDING AND CURRENT ROW) AS gain_sum,
-           SUM(CASE WHEN change < 0 THEN ABS(change) ELSE 0 END) OVER (ORDER BY open_time ROWS BETWEEN 13 PRECEDING AND CURRENT ROW) AS loss_sum
-    FROM gains_losses
 )
-SELECT open_time, close,
-       100 - (100 / (1 + (gain_sum / loss_sum))) AS rsi_14
-FROM gain_loss_sums;
+SELECT
+    close_time,
+    close,
+    100 - (100 / (1 + (
+        SUM(CASE WHEN price_change > 0 THEN price_change ELSE 0 END) OVER (ORDER BY close_time ROWS BETWEEN 13 PRECEDING AND CURRENT ROW) /
+        NULLIF(SUM(CASE WHEN price_change < 0 THEN ABS(price_change) ELSE 0 END) OVER (ORDER BY close_time ROWS BETWEEN 13 PRECEDING AND CURRENT ROW), 0)
+    ))) AS rsi
+FROM changes
+ORDER BY close_time DESC
+LIMIT 200;
 ```
 
 <br />
@@ -300,6 +235,7 @@ FROM gain_loss_sums;
 
 ### <a id="python-samples---how-to-implement-sql-in-python"></a>Python Samples - How to implement SQL in Python
 
+#### SQL Playground: [Streamlit Cloud](https://pyfihub-streamlit-apps-streamlit-sql-db-uo2s89.streamlit.app)
 <br />
 
 ```python

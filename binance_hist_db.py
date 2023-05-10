@@ -6,13 +6,9 @@ import numpy as np
 import logging
 from binance.client import Client
 import sqlite3
-#from api_keys import api_key, api_secret
-
-api_key = "" #not required
-api_secret = "" #not required
 
 # Binance Client
-client = Client(api_key, api_secret)
+client = Client()
 
 # Logger
 logger = logging.getLogger(__name__)
@@ -54,7 +50,7 @@ def get_historical_data(symbol, latest_timestamp=None, interval="1d", limit=1000
 
     if latest_timestamp:
         data = data[data["open_time"] > latest_timestamp]
-
+    
     return data
 
 def create_table(c, pair):
